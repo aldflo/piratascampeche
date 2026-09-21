@@ -4,8 +4,6 @@ import {
   Track,
 } from "livekit-client"
 
-const TOKEN_SERVER =
-  "http://localhost:3001"
 
 export async function connectViewer({
   identity,
@@ -14,12 +12,20 @@ export async function connectViewer({
   onDisconnected,
 }) {
   const response = await fetch(
-    `${TOKEN_SERVER}/token?identity=${encodeURIComponent(
+    `/api/token?identity=${encodeURIComponent(
       identity
     )}&role=viewer`
   )
 
   if (!response.ok) {
+    const errorText = await response.text()
+
+    console.error(
+      "Error obteniendo token viewer:",
+      response.status,
+      errorText
+    )
+
     throw new Error(
       "No se pudo obtener el token de espectador."
     )
@@ -27,10 +33,24 @@ export async function connectViewer({
 
   const data = await response.json()
 
+  if (!data.token) {
+    throw new Error(
+      "El servidor no devolvió un token LiveKit."
+    )
+  }
+
+  if (!data.url) {
+    throw new Error(
+      "El servidor no devolvió la URL de LiveKit."
+    )
+  }
+
+
   const room = new Room({
     adaptiveStream: true,
     dynacast: true,
   })
+
 
   room.on(
     RoomEvent.TrackSubscribed,
@@ -45,12 +65,14 @@ export async function connectViewer({
         participant.identity
       )
 
+
       if (
         track.kind ===
         Track.Kind.Video
       ) {
         onVideoTrack?.(track)
       }
+
 
       if (
         track.kind ===
@@ -61,12 +83,14 @@ export async function connectViewer({
     }
   )
 
+
   room.on(
     RoomEvent.TrackUnsubscribed,
     (track) => {
       track.detach()
     }
   )
+
 
   room.on(
     RoomEvent.Disconnected,
@@ -75,10 +99,12 @@ export async function connectViewer({
     }
   )
 
+
   await room.connect(
     data.url,
     data.token
   )
+
 
   return room
 }

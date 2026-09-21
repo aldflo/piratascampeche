@@ -6,23 +6,45 @@ import {
 
 let adminRoom = null
 
-const TOKEN_SERVER = "http://localhost:3001"
 
 async function getAdminToken(identity) {
   const response = await fetch(
-    `${TOKEN_SERVER}/token?identity=${encodeURIComponent(
+    `/api/token?identity=${encodeURIComponent(
       identity
     )}&role=admin`
   )
 
   if (!response.ok) {
+    const errorText = await response.text()
+
+    console.error(
+      "Error obteniendo token admin:",
+      response.status,
+      errorText
+    )
+
     throw new Error(
       `Error obteniendo token: ${response.status}`
     )
   }
 
-  return response.json()
+  const data = await response.json()
+
+  if (!data.token) {
+    throw new Error(
+      "El servidor no devolvió un token LiveKit."
+    )
+  }
+
+  if (!data.url) {
+    throw new Error(
+      "El servidor no devolvió la URL de LiveKit."
+    )
+  }
+
+  return data
 }
+
 
 export async function connectAdminToLiveKit({
   identity,
@@ -57,6 +79,7 @@ export async function connectAdminToLiveKit({
   return room
 }
 
+
 export async function startAdminCameraAndMic() {
   if (!adminRoom) {
     throw new Error(
@@ -69,9 +92,11 @@ export async function startAdminCameraAndMic() {
   return adminRoom
 }
 
+
 export function getAdminRoom() {
   return adminRoom
 }
+
 
 export function getLocalCameraTrack() {
   if (!adminRoom) return null
@@ -84,9 +109,12 @@ export function getLocalCameraTrack() {
   return publication?.track || null
 }
 
+
 export async function setCameraEnabled(enabled) {
   if (!adminRoom) {
-    throw new Error("No hay conexión con LiveKit.")
+    throw new Error(
+      "No hay conexión con LiveKit."
+    )
   }
 
   await adminRoom.localParticipant.setCameraEnabled(
@@ -94,15 +122,19 @@ export async function setCameraEnabled(enabled) {
   )
 }
 
+
 export async function setMicrophoneEnabled(enabled) {
   if (!adminRoom) {
-    throw new Error("No hay conexión con LiveKit.")
+    throw new Error(
+      "No hay conexión con LiveKit."
+    )
   }
 
   await adminRoom.localParticipant.setMicrophoneEnabled(
     enabled
   )
 }
+
 
 export function isCameraEnabled() {
   return (
@@ -111,6 +143,7 @@ export function isCameraEnabled() {
   )
 }
 
+
 export function isMicrophoneEnabled() {
   return (
     adminRoom?.localParticipant
@@ -118,9 +151,11 @@ export function isMicrophoneEnabled() {
   )
 }
 
+
 export async function disconnectAdminFromLiveKit() {
   if (!adminRoom) return
 
   await adminRoom.disconnect()
+
   adminRoom = null
 }
