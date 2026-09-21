@@ -1,85 +1,722 @@
-import { NavLink } from "react-router-dom"
+import {
+  useEffect,
+  useState,
+} from "react"
+
+import {
+  NavLink,
+  useLocation,
+} from "react-router-dom"
+
+import piratasLogo from "../assets/logopiratas.jpg"
+
 
 function Navbar() {
-  const linkClass = ({ isActive }) =>
-    isActive
-      ? "text-white"
-      : "text-slate-400 transition hover:text-white"
+  const [menuOpen, setMenuOpen] =
+    useState(false)
+
+  const location =
+    useLocation()
+
+
+  /*
+  ==========================================
+  CERRAR MENÚ AL CAMBIAR DE RUTA
+  ==========================================
+  */
+
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [location.pathname])
+
+
+  /*
+  ==========================================
+  BLOQUEAR SCROLL CUANDO MENÚ ESTÁ ABIERTO
+  ==========================================
+  */
+
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow =
+        "hidden"
+    } else {
+      document.body.style.overflow =
+        ""
+    }
+
+    return () => {
+      document.body.style.overflow =
+        ""
+    }
+  }, [menuOpen])
+
+
+  /*
+  ==========================================
+  LINK DESKTOP
+  ==========================================
+  */
+
+  const linkClass =
+    ({ isActive }) =>
+      `
+        relative
+        flex
+        h-full
+        items-center
+        text-[15px]
+        font-bold
+        transition-all
+        duration-200
+        ${
+          isActive
+            ? "text-yellow-300"
+            : "text-white/90 hover:text-yellow-300"
+        }
+      `
+
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#05070b]/85 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
+    <>
+      {/* =====================================
+          NAVBAR
+      ===================================== */}
 
-        {/* LOGO / MARCA */}
-        <NavLink to="/" className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-xl font-black shadow-lg shadow-blue-600/20">
-            P
-          </div>
+      <header
+        className="
+          sticky
+          top-0
+          z-50
+          border-b
+          border-white/10
+          bg-black
+        "
+      >
 
-          <div>
-            <h1 className="text-lg font-black tracking-tight">
-              PIRATAS LIVE
-            </h1>
+        <div
+          className="
+            mx-auto
+            flex
+            h-[86px]
+            max-w-[1280px]
+            items-center
+            justify-between
+            px-4
+            sm:px-6
+            lg:h-[98px]
+            lg:px-8
+          "
+        >
 
-            <p className="text-xs text-slate-500">
-              Baseball Broadcast System
-            </p>
-          </div>
-        </NavLink>
+          {/* =================================
+              LOGO
+          ================================= */}
 
-        {/* NAVEGACIÓN */}
-        <nav className="hidden items-center gap-7 text-sm font-medium md:flex">
           <NavLink
             to="/"
-            end
-            className={linkClass}
+            className="
+              flex
+              h-full
+              shrink-0
+              items-center
+            "
           >
-            Home
+
+            <div
+              className="
+                flex
+                h-[68px]
+                w-[94px]
+                items-center
+                justify-center
+                overflow-hidden
+                sm:h-[72px]
+                sm:w-[105px]
+                lg:h-[82px]
+                lg:w-[120px]
+              "
+            >
+
+              <img
+                src={piratasLogo}
+                alt="Piratas"
+                className="
+                  h-full
+                  w-full
+                  object-contain
+                  mix-blend-screen
+                "
+              />
+
+            </div>
+
           </NavLink>
 
-          <NavLink
+
+          {/* =================================
+              NAVEGACIÓN DESKTOP
+          ================================= */}
+
+          <nav
+            className="
+              hidden
+              h-full
+              items-center
+              gap-8
+              lg:flex
+            "
+          >
+
+            <NavLink
+              to="/"
+              end
+              className={
+                linkClass
+              }
+            >
+              Home
+            </NavLink>
+
+
+            <NavLink
+              to="/live"
+              className={
+                linkClass
+              }
+            >
+              En vivo
+            </NavLink>
+
+
+            <NavLink
+              to="/alineaciones"
+              className={
+                linkClass
+              }
+            >
+              Alineaciones
+            </NavLink>
+
+
+            <NavLink
+              to="/jugadas"
+              className={
+                linkClass
+              }
+            >
+              Jugadas
+            </NavLink>
+
+
+            <NavLink
+              to="/calendario"
+              className={
+                linkClass
+              }
+            >
+              Calendario
+            </NavLink>
+
+          </nav>
+
+
+          {/* =================================
+              DERECHA DESKTOP
+          ================================= */}
+
+          <div
+            className="
+              hidden
+              items-center
+              gap-3
+              lg:flex
+            "
+          >
+
+            {/* LIVE */}
+
+            <NavLink
+              to="/live"
+              className="
+                flex
+                items-center
+                gap-2
+                rounded-full
+                border
+                border-red-500/30
+                bg-red-500/10
+                px-4
+                py-2.5
+                text-[11px]
+                font-black
+                uppercase
+                tracking-[0.15em]
+                text-red-400
+                transition
+                hover:bg-red-500/20
+              "
+            >
+
+              <span
+                className="
+                  h-2
+                  w-2
+                  animate-pulse
+                  rounded-full
+                  bg-red-500
+                "
+              />
+
+              Live
+
+            </NavLink>
+
+
+            {/* CONTROL */}
+
+            <NavLink
+              to="/control"
+              className="
+                rounded-xl
+                border
+                border-yellow-300/25
+                bg-yellow-300
+                px-5
+                py-2.5
+                text-sm
+                font-black
+                text-black
+                transition
+                hover:bg-yellow-200
+              "
+            >
+              Mesa de control
+            </NavLink>
+
+          </div>
+
+
+          {/* =================================
+              HAMBURGUESA
+          ================================= */}
+
+          <button
+            type="button"
+            onClick={() =>
+              setMenuOpen(
+                (value) =>
+                  !value
+              )
+            }
+            aria-label={
+              menuOpen
+                ? "Cerrar menú"
+                : "Abrir menú"
+            }
+            aria-expanded={
+              menuOpen
+            }
+            className="
+              relative
+              flex
+              h-11
+              w-11
+              items-center
+              justify-center
+              rounded-xl
+              border
+              border-white/15
+              bg-white/[0.04]
+              text-white
+              transition
+              active:scale-95
+              lg:hidden
+            "
+          >
+
+            <div
+              className="
+                relative
+                h-5
+                w-6
+              "
+            >
+
+              <span
+                className={`
+                  absolute
+                  left-0
+                  top-0
+                  h-[2px]
+                  w-6
+                  rounded-full
+                  bg-white
+                  transition-all
+                  duration-300
+                  ${
+                    menuOpen
+                      ? "translate-y-[9px] rotate-45"
+                      : ""
+                  }
+                `}
+              />
+
+
+              <span
+                className={`
+                  absolute
+                  left-0
+                  top-[9px]
+                  h-[2px]
+                  w-6
+                  rounded-full
+                  bg-white
+                  transition-all
+                  duration-300
+                  ${
+                    menuOpen
+                      ? "opacity-0"
+                      : "opacity-100"
+                  }
+                `}
+              />
+
+
+              <span
+                className={`
+                  absolute
+                  bottom-0
+                  left-0
+                  h-[2px]
+                  w-6
+                  rounded-full
+                  bg-white
+                  transition-all
+                  duration-300
+                  ${
+                    menuOpen
+                      ? "-translate-y-[9px] -rotate-45"
+                      : ""
+                  }
+                `}
+              />
+
+            </div>
+
+          </button>
+
+        </div>
+
+      </header>
+
+
+      {/* =====================================
+          OVERLAY MÓVIL
+      ===================================== */}
+
+      <div
+        onClick={() =>
+          setMenuOpen(false)
+        }
+        className={`
+          fixed
+          inset-0
+          z-40
+          bg-black/80
+          backdrop-blur-sm
+          transition-opacity
+          duration-300
+          lg:hidden
+          ${
+            menuOpen
+              ? "pointer-events-auto opacity-100"
+              : "pointer-events-none opacity-0"
+          }
+        `}
+      />
+
+
+      {/* =====================================
+          MENÚ MÓVIL
+      ===================================== */}
+
+      <aside
+        className={`
+          fixed
+          right-0
+          top-[86px]
+          z-50
+          h-[calc(100dvh-86px)]
+          w-[88%]
+          max-w-[360px]
+          overflow-y-auto
+          border-l
+          border-white/10
+          bg-black
+          p-5
+          shadow-2xl
+          transition-transform
+          duration-300
+          ease-out
+          lg:hidden
+          ${
+            menuOpen
+              ? "translate-x-0"
+              : "translate-x-full"
+          }
+        `}
+      >
+
+        {/* LOGO MOBILE */}
+
+        <div
+          className="
+            mb-5
+            flex
+            items-center
+            justify-center
+            border-b
+            border-white/10
+            pb-5
+          "
+        >
+
+          <img
+            src={piratasLogo}
+            alt="Piratas"
+            className="
+              h-[90px]
+              w-[140px]
+              object-contain
+              mix-blend-screen
+            "
+          />
+
+        </div>
+
+
+        {/* LIVE */}
+
+        <NavLink
+          to="/live"
+          className="
+            mb-5
+            flex
+            items-center
+            justify-between
+            rounded-2xl
+            border
+            border-red-500/20
+            bg-red-500/10
+            p-4
+          "
+        >
+
+          <div>
+
+            <p
+              className="
+                text-[10px]
+                font-black
+                uppercase
+                tracking-[0.2em]
+                text-red-400
+              "
+            >
+              Piratas Live
+            </p>
+
+
+            <p
+              className="
+                mt-1
+                text-sm
+                font-black
+                text-white
+              "
+            >
+              Ver transmisión
+            </p>
+
+          </div>
+
+
+          <div
+            className="
+              flex
+              h-11
+              w-11
+              items-center
+              justify-center
+              rounded-full
+              bg-red-500/15
+            "
+          >
+
+            <span
+              className="
+                h-3
+                w-3
+                animate-pulse
+                rounded-full
+                bg-red-500
+              "
+            />
+
+          </div>
+
+        </NavLink>
+
+
+        {/* =================================
+            LINKS MOBILE
+        ================================= */}
+
+        <nav className="space-y-1">
+
+          <MobileNavItem
+            to="/"
+            label="Home"
+          />
+
+          <MobileNavItem
             to="/live"
-            className={linkClass}
-          >
-            En vivo
-          </NavLink>
+            label="En vivo"
+          />
 
-          <NavLink
+          <MobileNavItem
             to="/alineaciones"
-            className={linkClass}
-          >
-            Alineaciones
-          </NavLink>
+            label="Alineaciones"
+          />
 
-          <NavLink
+          <MobileNavItem
             to="/jugadas"
-            className={linkClass}
-          >
-            Jugadas
-          </NavLink>
+            label="Jugadas"
+          />
 
-          <NavLink
+          <MobileNavItem
             to="/calendario"
-            className={linkClass}
-          >
-            Calendario
-          </NavLink>
+            label="Calendario"
+          />
+
         </nav>
 
-        {/* MESA DE CONTROL */}
+
+        <div
+          className="
+            my-5
+            h-px
+            bg-white/10
+          "
+        />
+
+
+        {/* CONTROL MOBILE */}
+
         <NavLink
           to="/control"
-          className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold transition hover:bg-white/10"
+          className="
+            flex
+            min-h-[54px]
+            w-full
+            items-center
+            justify-center
+            rounded-2xl
+            bg-yellow-300
+            px-5
+            py-3
+            text-sm
+            font-black
+            text-black
+            transition
+            active:scale-[0.98]
+          "
         >
           Mesa de control
         </NavLink>
-        
-  
 
 
-      </div>
-    </header>
+        <p
+          className="
+            mt-6
+            text-center
+            text-[10px]
+            font-bold
+            uppercase
+            tracking-[0.2em]
+            text-white/25
+          "
+        >
+          Piratas de Campeche
+        </p>
+
+      </aside>
+    </>
   )
 }
+
+
+/*
+==========================================
+LINK MOBILE
+==========================================
+*/
+
+function MobileNavItem({
+  to,
+  label,
+}) {
+  return (
+    <NavLink
+      to={to}
+      end={
+        to === "/"
+      }
+      className={({
+        isActive,
+      }) =>
+        `
+          relative
+          flex
+          min-h-[54px]
+          items-center
+          border-b
+          border-white/[0.07]
+          px-2
+          text-base
+          font-bold
+          transition
+          ${
+            isActive
+              ? "text-yellow-300"
+              : "text-white/80 hover:text-yellow-300"
+          }
+        `
+      }
+    >
+
+      {({ isActive }) => (
+        <>
+          {isActive && (
+            <span
+              className="
+                mr-3
+                h-2
+                w-2
+                rounded-full
+                bg-yellow-300
+              "
+            />
+          )}
+
+          {label}
+        </>
+      )}
+
+    </NavLink>
+  )
+}
+
 
 export default Navbar
