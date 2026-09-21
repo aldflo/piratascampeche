@@ -8,7 +8,7 @@ import {
   useLocation,
 } from "react-router-dom"
 
-import piratasLogo from "../assets/logopiratas.jpg"
+import piratasLogo from "../assets/pirataslogotipo.png"
 
 
 function Navbar() {

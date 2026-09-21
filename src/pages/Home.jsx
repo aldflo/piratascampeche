@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import piratasLogo from "../assets/piratas-logo.png"
+import videoHero from "../assets/videohero.mp4"
 
 function Home() {
   const featuredPlayers = [
@@ -11,11 +12,59 @@ function Home() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-black text-white">
-      {/* HERO */}
+      {/* =====================================================
+          VIDEO HERO
+      ===================================================== */}
+
+      <section className="relative overflow-hidden border-b border-yellow-300/15 bg-black">
+        {/* ILUMINACIÓN */}
+        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-yellow-300/[0.04] via-transparent to-black/30" />
+
+        <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-[70%] w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-yellow-300/[0.06] blur-[120px]" />
+
+        {/* VIDEO */}
+        <div className="relative mx-auto flex w-full max-w-[1600px] items-center justify-center bg-black">
+          <video
+            src={videoHero}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            className="
+              relative
+              z-0
+              block
+              h-auto
+              max-h-[78vh]
+              w-full
+              bg-black
+              object-contain
+            "
+          />
+        </div>
+
+        {/* ETIQUETA INFERIOR */}
+        <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 sm:bottom-6">
+          <div className="flex items-center gap-2 rounded-full border border-yellow-300/20 bg-black/70 px-4 py-2 backdrop-blur-md">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-yellow-300" />
+
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-yellow-300 sm:text-xs">
+              Piratas de Campeche
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          HERO PRINCIPAL
+      ===================================================== */}
+
       <section className="relative overflow-hidden border-b border-yellow-400/15">
         <div className="absolute inset-0 bg-gradient-to-br from-yellow-300/10 via-transparent to-white/5" />
 
         <div className="absolute -left-20 top-10 h-72 w-72 rounded-full bg-yellow-300/10 blur-[110px]" />
+
         <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-white/5 blur-[120px]" />
 
         <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-12 sm:px-5 sm:py-16 lg:min-h-[560px] lg:grid-cols-2 lg:px-8 lg:py-20">
@@ -27,6 +76,7 @@ function Home() {
 
             <h1 className="mx-auto max-w-2xl text-4xl font-black leading-[1.02] tracking-[-0.04em] sm:text-5xl md:text-6xl lg:mx-0 lg:text-7xl">
               El béisbol de
+
               <span className="mt-1 block text-yellow-300">
                 Campeche en vivo.
               </span>
@@ -43,6 +93,7 @@ function Home() {
                 className="flex min-h-[50px] items-center justify-center gap-2 rounded-2xl bg-yellow-300 px-6 py-3 text-sm font-black text-black transition hover:bg-yellow-200 active:scale-[0.98]"
               >
                 <span className="h-2 w-2 animate-pulse rounded-full bg-black" />
+
                 Ver transmisión
               </Link>
 
@@ -69,11 +120,12 @@ function Home() {
               <img
                 src={piratasLogo}
                 alt="Logo de Piratas"
-                className="relative z-10 w-full max-w-[340px] rounded-2xl object-contain"
+                className="relative z-10 w-full max-w-[340px] object-contain"
               />
 
               <div className="absolute bottom-4 right-4 flex items-center gap-2 rounded-full border border-yellow-300/20 bg-black/80 px-4 py-2 shadow-xl">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-yellow-300" />
+
                 <span className="text-[10px] font-black uppercase tracking-wider text-yellow-300">
                   Piratas Live
                 </span>
@@ -83,7 +135,10 @@ function Home() {
         </div>
       </section>
 
-      {/* INFORMACIÓN PRINCIPAL */}
+      {/* =====================================================
+          INFORMACIÓN PRINCIPAL
+      ===================================================== */}
+
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-5 sm:py-14 lg:px-8">
         <div className="mb-7">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-300">
@@ -130,8 +185,13 @@ function Home() {
 
             <div className="mt-5 flex items-center justify-between gap-4">
               <div>
-                <p className="font-black text-white">Piratas</p>
-                <p className="text-sm text-slate-400">Campeche</p>
+                <p className="font-black text-white">
+                  Piratas
+                </p>
+
+                <p className="text-sm text-slate-400">
+                  Campeche
+                </p>
               </div>
 
               <p className="text-4xl font-black text-yellow-300">
@@ -143,8 +203,13 @@ function Home() {
 
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-black text-white">Rival</p>
-                <p className="text-sm text-slate-400">Visitante</p>
+                <p className="font-black text-white">
+                  Rival
+                </p>
+
+                <p className="text-sm text-slate-400">
+                  Visitante
+                </p>
               </div>
 
               <p className="text-4xl font-black text-white">
@@ -178,8 +243,10 @@ function Home() {
         </div>
       </section>
 
-     
-      {/* CTA FINAL */}
+      {/* =====================================================
+          CTA FINAL
+      ===================================================== */}
+
       <section className="border-t border-white/10 bg-white/[0.02]">
         <div className="mx-auto max-w-7xl px-4 py-12 text-center sm:px-5 sm:py-16 lg:px-8">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-yellow-300">
