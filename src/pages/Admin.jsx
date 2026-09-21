@@ -4,10 +4,21 @@ import {
   useState,
 } from "react"
 
-import { signOut } from "firebase/auth"
-import { useNavigate } from "react-router-dom"
+import {
+  signOut,
+} from "firebase/auth"
 
-import { auth } from "../firebase.config"
+import {
+  useNavigate,
+} from "react-router-dom"
+
+import {
+  RoomEvent,
+} from "livekit-client"
+
+import {
+  auth,
+} from "../firebase.config"
 
 import {
   subscribeToCurrentStream,
@@ -23,19 +34,32 @@ import {
   setCameraEnabled as setLiveKitCameraEnabled,
   setMicrophoneEnabled as setLiveKitMicrophoneEnabled,
   disconnectAdminFromLiveKit,
+  switchCamera,
 } from "../services/livekitService"
 
 
 function Admin() {
-  const navigate = useNavigate()
+  const navigate =
+    useNavigate()
 
-  const videoRef = useRef(null)
 
-  const [streamInfo, setStreamInfo] =
-    useState(null)
+  const videoRef =
+    useRef(null)
 
-  const [streamTitle, setStreamTitle] =
-    useState("Piratas Live")
+
+  const [
+    streamInfo,
+    setStreamInfo,
+  ] = useState(null)
+
+
+  const [
+    streamTitle,
+    setStreamTitle,
+  ] = useState(
+    "Piratas Live"
+  )
+
 
   const [
     streamDescription,
@@ -44,37 +68,99 @@ function Admin() {
     "Transmisión oficial del partido"
   )
 
-  const [livekitRoom, setLivekitRoom] =
-    useState(null)
 
-  const [cameraAllowed, setCameraAllowed] =
-    useState(false)
+  const [
+    livekitRoom,
+    setLivekitRoom,
+  ] = useState(null)
 
-  const [micAllowed, setMicAllowed] =
-    useState(false)
 
-  const [cameraEnabled, setCameraEnabled] =
-    useState(false)
+  const [
+    cameraAllowed,
+    setCameraAllowed,
+  ] = useState(false)
 
-  const [micEnabled, setMicEnabled] =
-    useState(false)
+
+  const [
+    micAllowed,
+    setMicAllowed,
+  ] = useState(false)
+
+
+  const [
+    cameraEnabled,
+    setCameraEnabled,
+  ] = useState(false)
+
+
+  const [
+    micEnabled,
+    setMicEnabled,
+  ] = useState(false)
+
 
   const [
     livekitConnected,
     setLivekitConnected,
   ] = useState(false)
 
-  const [previewActive, setPreviewActive] =
-    useState(false)
 
-  const [loadingAction, setLoadingAction] =
-    useState(false)
+  const [
+    previewActive,
+    setPreviewActive,
+  ] = useState(false)
 
-  const [message, setMessage] =
-    useState("")
 
-  const [error, setError] =
-    useState("")
+  const [
+    loadingAction,
+    setLoadingAction,
+  ] = useState(false)
+
+
+  const [
+    switchingCamera,
+    setSwitchingCamera,
+  ] = useState(false)
+
+
+  const [
+    message,
+    setMessage,
+  ] = useState("")
+
+
+  const [
+    error,
+    setError,
+  ] = useState("")
+
+
+  /*
+  ==========================================
+  NUEVO:
+  CONTADOR DE ESPECTADORES
+  ==========================================
+  */
+
+  const [
+    viewerCount,
+    setViewerCount,
+  ] = useState(0)
+
+
+  /*
+  ==========================================
+  NUEVO:
+  FRONTAL / TRASERA
+  ==========================================
+  */
+
+  const [
+    cameraFacing,
+    setCameraFacing,
+  ] = useState(
+    "environment"
+  )
 
 
   /*
@@ -85,24 +171,105 @@ function Admin() {
 
   useEffect(() => {
     const unsubscribe =
-      subscribeToCurrentStream((data) => {
-        setStreamInfo(data)
+      subscribeToCurrentStream(
+        (data) => {
+          setStreamInfo(data)
 
-        if (!data) return
 
-        if (data.title) {
-          setStreamTitle(data.title)
-        }
+          if (!data) {
+            return
+          }
 
-        if (data.description) {
-          setStreamDescription(
+
+          if (data.title) {
+            setStreamTitle(
+              data.title
+            )
+          }
+
+
+          if (
             data.description
-          )
+          ) {
+            setStreamDescription(
+              data.description
+            )
+          }
         }
-      })
+      )
 
-    return () => unsubscribe()
+
+    return () =>
+      unsubscribe()
   }, [])
+
+
+  /*
+  ==========================================
+  CONTADOR DE ESPECTADORES LIVEKIT
+  ==========================================
+  */
+
+  useEffect(() => {
+    if (!livekitRoom) {
+      setViewerCount(0)
+
+      return
+    }
+
+
+    const updateViewerCount =
+      () => {
+        setViewerCount(
+          livekitRoom
+            .remoteParticipants
+            .size
+        )
+      }
+
+
+    /*
+    Contar los que ya están conectados.
+    */
+
+    updateViewerCount()
+
+
+    /*
+    Escuchar nuevas conexiones.
+    */
+
+    livekitRoom.on(
+      RoomEvent.ParticipantConnected,
+      updateViewerCount
+    )
+
+
+    /*
+    Escuchar desconexiones.
+    */
+
+    livekitRoom.on(
+      RoomEvent.ParticipantDisconnected,
+      updateViewerCount
+    )
+
+
+    return () => {
+      livekitRoom.off(
+        RoomEvent.ParticipantConnected,
+        updateViewerCount
+      )
+
+
+      livekitRoom.off(
+        RoomEvent.ParticipantDisconnected,
+        updateViewerCount
+      )
+    }
+  }, [
+    livekitRoom,
+  ])
 
 
   /*
@@ -120,24 +287,36 @@ function Admin() {
       return
     }
 
+
     const cameraTrack =
       getLocalCameraTrack()
 
-    if (!cameraTrack) return
 
-    const video = videoRef.current
+    if (!cameraTrack) {
+      return
+    }
+
+
+    const video =
+      videoRef.current
+
 
     try {
-      cameraTrack.attach(video)
+      cameraTrack.attach(
+        video
+      )
+
 
       video
         .play()
-        .catch((err) => {
-          console.error(
-            "Error reproduciendo preview:",
-            err
-          )
-        })
+        .catch(
+          (err) => {
+            console.error(
+              "Error reproduciendo preview:",
+              err
+            )
+          }
+        )
     } catch (err) {
       console.error(
         "Error conectando preview:",
@@ -145,9 +324,12 @@ function Admin() {
       )
     }
 
+
     return () => {
       try {
-        cameraTrack.detach(video)
+        cameraTrack.detach(
+          video
+        )
       } catch (err) {
         console.error(
           "Error separando preview:",
@@ -159,6 +341,7 @@ function Admin() {
     livekitRoom,
     previewActive,
     cameraEnabled,
+    cameraFacing,
   ])
 
 
@@ -171,9 +354,13 @@ function Admin() {
   useEffect(() => {
     return () => {
       disconnectAdminFromLiveKit()
-        .catch((err) => {
-          console.error(err)
-        })
+        .catch(
+          (err) => {
+            console.error(
+              err
+            )
+          }
+        )
     }
   }, [])
 
@@ -191,21 +378,23 @@ function Admin() {
       setError("")
       setMessage("")
 
+
       try {
         /*
         ========================================
-        IDENTIDAD DEL ADMIN
+        IDENTIDAD ADMIN
         ========================================
         */
 
         const identity =
-          auth.currentUser?.uid ||
+          auth.currentUser
+            ?.uid ||
           `admin-${Date.now()}`
 
 
         /*
         ========================================
-        CONECTAR CON LIVEKIT
+        LIVEKIT
         ========================================
         */
 
@@ -213,44 +402,79 @@ function Admin() {
           await connectAdminToLiveKit({
             identity,
 
-            onDisconnected: () => {
-              setLivekitConnected(false)
+            onDisconnected:
+              () => {
+                setLivekitConnected(
+                  false
+                )
 
-              setCameraEnabled(false)
-              setMicEnabled(false)
+                setCameraEnabled(
+                  false
+                )
 
-              setPreviewActive(false)
+                setMicEnabled(
+                  false
+                )
 
-              setLivekitRoom(null)
-            },
+                setPreviewActive(
+                  false
+                )
+
+                setLivekitRoom(
+                  null
+                )
+
+                setViewerCount(
+                  0
+                )
+              },
           })
 
 
-        setLivekitRoom(room)
-        setLivekitConnected(true)
+        setLivekitRoom(
+          room
+        )
+
+        setLivekitConnected(
+          true
+        )
 
 
         /*
         ========================================
-        ACTIVAR CÁMARA + MIC
+        CÁMARA TRASERA + MIC
         ========================================
         */
 
         await startAdminCameraAndMic()
 
 
-        /*
-        LiveKit ya pidió permisos al navegador.
-        Si llegamos aquí, tenemos acceso.
-        */
+        setCameraFacing(
+          "environment"
+        )
 
-        setCameraAllowed(true)
-        setMicAllowed(true)
 
-        setCameraEnabled(true)
-        setMicEnabled(true)
+        setCameraAllowed(
+          true
+        )
 
-        setPreviewActive(true)
+        setMicAllowed(
+          true
+        )
+
+
+        setCameraEnabled(
+          true
+        )
+
+        setMicEnabled(
+          true
+        )
+
+
+        setPreviewActive(
+          true
+        )
 
 
         /*
@@ -268,22 +492,27 @@ function Admin() {
             streamDescription ||
             "Transmisión oficial del partido",
 
-          cameraAllowed: true,
+          cameraAllowed:
+            true,
 
-          micAllowed: true,
+          micAllowed:
+            true,
 
-          cameraEnabled: true,
+          cameraEnabled:
+            true,
 
-          micEnabled: true,
+          micEnabled:
+            true,
 
           adminEmail:
-            auth.currentUser?.email ||
+            auth.currentUser
+              ?.email ||
             "",
         })
 
 
         setMessage(
-          "Transmisión conectada a LiveKit. Cámara y micrófono están enviando señal."
+          "Transmisión conectada. Cámara y micrófono están enviando señal."
         )
       } catch (err) {
         console.error(
@@ -291,11 +520,6 @@ function Admin() {
           err
         )
 
-        /*
-        ========================================
-        ERRORES DE PERMISOS
-        ========================================
-        */
 
         if (
           err?.name ===
@@ -307,7 +531,8 @@ function Admin() {
             "Debes permitir el acceso a la cámara y al micrófono."
           )
         } else if (
-          err?.name === "NotFoundError"
+          err?.name ===
+          "NotFoundError"
         ) {
           setError(
             "No encontramos una cámara o micrófono disponible."
@@ -315,14 +540,23 @@ function Admin() {
         } else {
           setError(
             err?.message ||
-              "No se pudo iniciar la transmisión."
+            "No se pudo iniciar la transmisión."
           )
         }
 
-        setCameraEnabled(false)
-        setMicEnabled(false)
 
-        setPreviewActive(false)
+        setCameraEnabled(
+          false
+        )
+
+        setMicEnabled(
+          false
+        )
+
+        setPreviewActive(
+          false
+        )
+
 
         try {
           await disconnectAdminFromLiveKit()
@@ -330,10 +564,22 @@ function Admin() {
           // nada
         }
 
-        setLivekitConnected(false)
-        setLivekitRoom(null)
+
+        setLivekitConnected(
+          false
+        )
+
+        setLivekitRoom(
+          null
+        )
+
+        setViewerCount(
+          0
+        )
       } finally {
-        setLoadingAction(false)
+        setLoadingAction(
+          false
+        )
       }
     }
 
@@ -351,41 +597,63 @@ function Admin() {
       setError("")
       setMessage("")
 
-      try {
-        /*
-        Primero apagamos estado público
-        */
 
+      try {
         await stopCurrentStream()
 
-
-        /*
-        Después cerramos LiveKit
-        */
 
         await disconnectAdminFromLiveKit()
 
 
-        /*
-        Limpiar preview
-        */
-
-        if (videoRef.current) {
-          videoRef.current.srcObject =
+        if (
+          videoRef.current
+        ) {
+          videoRef.current
+            .srcObject =
             null
         }
 
-        setLivekitRoom(null)
 
-        setLivekitConnected(false)
+        setLivekitRoom(
+          null
+        )
 
-        setPreviewActive(false)
+        setLivekitConnected(
+          false
+        )
 
-        setCameraEnabled(false)
-        setMicEnabled(false)
+        setPreviewActive(
+          false
+        )
 
-        setCameraAllowed(false)
-        setMicAllowed(false)
+
+        setCameraEnabled(
+          false
+        )
+
+        setMicEnabled(
+          false
+        )
+
+
+        setCameraAllowed(
+          false
+        )
+
+        setMicAllowed(
+          false
+        )
+
+
+        setViewerCount(
+          0
+        )
+
+
+        setCameraFacing(
+          "environment"
+        )
+
 
         setMessage(
           "Transmisión finalizada correctamente."
@@ -396,11 +664,14 @@ function Admin() {
           err
         )
 
+
         setError(
           "No se pudo finalizar la transmisión."
         )
       } finally {
-        setLoadingAction(false)
+        setLoadingAction(
+          false
+        )
       }
     }
 
@@ -413,42 +684,144 @@ function Admin() {
 
   const toggleCamera =
     async () => {
-      if (!livekitConnected) return
+      if (
+        !livekitConnected
+      ) {
+        return
+      }
+
 
       setError("")
 
+
       const nextState =
         !cameraEnabled
+
 
       try {
         await setLiveKitCameraEnabled(
           nextState
         )
 
-        setCameraEnabled(nextState)
 
-        /*
-        Cuando vuelva a encender,
-        refrescamos el preview.
-        */
+        setCameraEnabled(
+          nextState
+        )
+
 
         if (nextState) {
-          setPreviewActive(false)
+          setPreviewActive(
+            false
+          )
 
-          setTimeout(() => {
-            setPreviewActive(true)
-          }, 50)
+
+          setTimeout(
+            () => {
+              setPreviewActive(
+                true
+              )
+            },
+            100
+          )
         }
+
 
         await updateCurrentStream({
           cameraEnabled:
             nextState,
         })
       } catch (err) {
-        console.error(err)
+        console.error(
+          err
+        )
+
 
         setError(
           "No se pudo cambiar el estado de la cámara."
+        )
+      }
+    }
+
+
+  /*
+  ==========================================
+  CAMBIAR FRONTAL / TRASERA
+  ==========================================
+  */
+
+  const handleSwitchCamera =
+    async () => {
+      if (
+        !livekitConnected ||
+        !cameraEnabled ||
+        switchingCamera
+      ) {
+        return
+      }
+
+
+      setSwitchingCamera(
+        true
+      )
+
+      setError("")
+      setMessage("")
+
+
+      try {
+        const nextFacing =
+          cameraFacing ===
+          "environment"
+            ? "user"
+            : "environment"
+
+
+        /*
+        Pausar preview mientras
+        LiveKit reinicia la pista.
+        */
+
+        setPreviewActive(
+          false
+        )
+
+
+        await switchCamera(
+          nextFacing
+        )
+
+
+        setCameraFacing(
+          nextFacing
+        )
+
+
+        setTimeout(
+          () => {
+            setPreviewActive(
+              true
+            )
+          },
+          150
+        )
+      } catch (err) {
+        console.error(
+          "Error cambiando cámara:",
+          err
+        )
+
+
+        setPreviewActive(
+          true
+        )
+
+
+        setError(
+          "No se pudo cambiar entre la cámara frontal y trasera."
+        )
+      } finally {
+        setSwitchingCamera(
+          false
         )
       }
     }
@@ -462,26 +835,40 @@ function Admin() {
 
   const toggleMic =
     async () => {
-      if (!livekitConnected) return
+      if (
+        !livekitConnected
+      ) {
+        return
+      }
+
 
       setError("")
 
+
       const nextState =
         !micEnabled
+
 
       try {
         await setLiveKitMicrophoneEnabled(
           nextState
         )
 
-        setMicEnabled(nextState)
+
+        setMicEnabled(
+          nextState
+        )
+
 
         await updateCurrentStream({
           micEnabled:
             nextState,
         })
       } catch (err) {
-        console.error(err)
+        console.error(
+          err
+        )
+
 
         setError(
           "No se pudo cambiar el estado del micrófono."
@@ -499,17 +886,26 @@ function Admin() {
   const handleLogout =
     async () => {
       try {
-        if (livekitConnected) {
+        if (
+          livekitConnected
+        ) {
           await disconnectAdminFromLiveKit()
 
           await stopCurrentStream()
         }
 
-        await signOut(auth)
+
+        await signOut(
+          auth
+        )
+
 
         navigate("/")
       } catch (err) {
-        console.error(err)
+        console.error(
+          err
+        )
+
 
         setError(
           "No se pudo cerrar la sesión."
@@ -525,7 +921,9 @@ function Admin() {
   */
 
   const isLive =
-    streamInfo?.isLive ?? false
+    streamInfo?.isLive ??
+    false
+
 
   const transmissionActive =
     livekitConnected &&
@@ -552,15 +950,34 @@ function Admin() {
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
-              Controla la señal, cámara,
-              micrófono y estado público
+              Controla la señal, cámaras,
+              micrófono y espectadores
               de Piratas Live.
             </p>
 
           </div>
 
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+
+            {/* ESPECTADORES */}
+
+            <div className="flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2">
+
+              <span>
+                👥
+              </span>
+
+              <span className="text-xs font-black text-blue-300">
+                {viewerCount}
+              </span>
+
+              <span className="text-xs text-blue-400">
+                espectadores
+              </span>
+
+            </div>
+
 
             <div
               className={`rounded-full border px-4 py-2 text-xs font-black uppercase tracking-[0.18em] ${
@@ -576,7 +993,9 @@ function Admin() {
 
 
             <button
-              onClick={handleLogout}
+              onClick={
+                handleLogout
+              }
               className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold transition hover:bg-white/10"
             >
               Cerrar sesión
@@ -621,6 +1040,7 @@ function Admin() {
 
           <div className="space-y-6">
 
+
             <section className="overflow-hidden rounded-[30px] border border-white/10 bg-white/[0.035]">
 
               <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
@@ -664,7 +1084,9 @@ function Admin() {
                     {previewActive ? (
 
                       <video
-                        ref={videoRef}
+                        ref={
+                          videoRef
+                        }
                         autoPlay
                         playsInline
                         muted
@@ -742,19 +1164,52 @@ function Admin() {
                         : "OFF"}
                     </span>
 
+
+                    {cameraEnabled && (
+
+                      <span className="rounded-full bg-violet-500/20 px-3 py-1.5 text-[11px] font-bold text-violet-300">
+                        {cameraFacing ===
+                        "environment"
+                          ? "📷 Trasera"
+                          : "🤳 Frontal"}
+                      </span>
+
+                    )}
+
                   </div>
+
+
+                  {/* ESPECTADORES SOBRE VIDEO */}
+
+                  {transmissionActive && (
+
+                    <div className="absolute right-4 top-4 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 backdrop-blur">
+
+                      <span className="text-xs">
+                        👁
+                      </span>
+
+                      <span className="text-xs font-black text-white">
+                        {viewerCount}
+                      </span>
+
+                    </div>
+
+                  )}
 
                 </div>
 
 
                 {/* CONTROLES */}
 
-                <div className="mt-6 grid gap-3 md:grid-cols-3">
+                <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
                   {/* CÁMARA */}
 
                   <button
-                    onClick={toggleCamera}
+                    onClick={
+                      toggleCamera
+                    }
                     disabled={
                       !livekitConnected ||
                       loadingAction
@@ -819,10 +1274,56 @@ function Admin() {
                   </button>
 
 
+                  {/* CAMBIAR CÁMARA */}
+
+                  <button
+                    onClick={
+                      handleSwitchCamera
+                    }
+                    disabled={
+                      !livekitConnected ||
+                      !cameraEnabled ||
+                      loadingAction ||
+                      switchingCamera
+                    }
+                    className="rounded-[22px] border border-violet-500/30 bg-violet-500/10 px-5 py-4 text-left transition-all duration-300 hover:bg-violet-500/15 disabled:cursor-not-allowed disabled:opacity-30"
+                  >
+
+                    <div className="flex items-center gap-4">
+
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/10 text-2xl">
+                        🔄
+                      </div>
+
+
+                      <div>
+
+                        <p className="text-sm font-black">
+                          {switchingCamera
+                            ? "Cambiando..."
+                            : "Cambiar cámara"}
+                        </p>
+
+                        <p className="mt-1 text-xs text-violet-300">
+                          {cameraFacing ===
+                          "environment"
+                            ? "Trasera"
+                            : "Frontal"}
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                  </button>
+
+
                   {/* MIC */}
 
                   <button
-                    onClick={toggleMic}
+                    onClick={
+                      toggleMic
+                    }
                     disabled={
                       !livekitConnected ||
                       loadingAction
@@ -877,7 +1378,9 @@ function Admin() {
 
 
                       <Switch
-                        active={micEnabled}
+                        active={
+                          micEnabled
+                        }
                         cyan
                       />
 
@@ -899,7 +1402,7 @@ function Admin() {
                     className={`group rounded-[22px] border px-5 py-4 transition-all duration-300 disabled:cursor-not-allowed ${
                       transmissionActive
                         ? "border-red-500/30 bg-red-500/10"
-                        : "border-blue-500/30 bg-blue-600 hover:bg-blue-500 hover:shadow-[0_0_35px_rgba(37,99,235,0.25)]"
+                        : "border-blue-500/30 bg-blue-600 hover:bg-blue-500"
                     }`}
                   >
 
@@ -948,7 +1451,7 @@ function Admin() {
 
                           {transmissionActive
                             ? "LiveKit conectado"
-                            : "Publicar cámara y micrófono"}
+                            : "Publicar señal"}
 
                         </p>
 
@@ -1003,11 +1506,14 @@ function Admin() {
               <div className="mt-6 space-y-4">
 
                 <input
-                  value={streamTitle}
-                  onChange={(e) =>
-                    setStreamTitle(
-                      e.target.value
-                    )
+                  value={
+                    streamTitle
+                  }
+                  onChange={
+                    (e) =>
+                      setStreamTitle(
+                        e.target.value
+                      )
                   }
                   placeholder="Título"
                   className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-4 outline-none focus:border-blue-500"
@@ -1018,10 +1524,11 @@ function Admin() {
                   value={
                     streamDescription
                   }
-                  onChange={(e) =>
-                    setStreamDescription(
-                      e.target.value
-                    )
+                  onChange={
+                    (e) =>
+                      setStreamDescription(
+                        e.target.value
+                      )
                   }
                   rows="4"
                   placeholder="Descripción"
@@ -1038,6 +1545,41 @@ function Admin() {
           {/* SIDEBAR */}
 
           <aside className="space-y-6">
+
+            {/* ESPECTADORES */}
+
+            <section className="rounded-[30px] border border-blue-500/20 bg-gradient-to-br from-blue-600/15 to-cyan-500/5 p-6">
+
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-400">
+                Audiencia
+              </p>
+
+
+              <div className="mt-4 flex items-end justify-between">
+
+                <div>
+
+                  <p className="text-5xl font-black tracking-tight">
+                    {viewerCount}
+                  </p>
+
+                  <p className="mt-2 text-sm text-slate-400">
+                    espectadores conectados
+                  </p>
+
+                </div>
+
+
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500/10 text-3xl">
+                  👥
+                </div>
+
+              </div>
+
+            </section>
+
+
+            {/* ESTADO */}
 
             <section className="rounded-[30px] border border-white/10 bg-white/[0.035] p-6">
 
@@ -1082,7 +1624,10 @@ function Admin() {
                   name="Cámara"
                   value={
                     cameraEnabled
-                      ? "Encendida"
+                      ? cameraFacing ===
+                        "environment"
+                        ? "Trasera"
+                        : "Frontal"
                       : "Apagada"
                   }
                   active={
@@ -1149,6 +1694,8 @@ function Admin() {
             </section>
 
 
+            {/* LIVE */}
+
             <section className="rounded-[30px] border border-blue-500/20 bg-blue-600/10 p-6">
 
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-400">
@@ -1186,6 +1733,19 @@ function Admin() {
 
                 <p className="mt-2 font-bold text-blue-300">
                   piratas-live
+                </p>
+
+              </div>
+
+
+              <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-4">
+
+                <p className="text-xs text-slate-600">
+                  Espectadores
+                </p>
+
+                <p className="mt-2 text-2xl font-black text-white">
+                  {viewerCount}
                 </p>
 
               </div>
@@ -1272,5 +1832,6 @@ function StatusRow({
 
   )
 }
+
 
 export default Admin
