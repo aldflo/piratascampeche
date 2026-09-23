@@ -318,7 +318,7 @@ function Live() {
           className="
             mb-3
             overflow-hidden
-            lg:hidden
+            md:hidden
             rounded-2xl
             border border-white/[0.08]
             bg-white/[0.04]

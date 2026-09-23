@@ -1028,41 +1028,39 @@ function LiveVideo({ stream }) {
             flex
             items-start
             justify-between
-            gap-3
+            gap-2
             sm:left-4
             sm:right-4
             sm:top-4
           "
         >
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex min-w-0 flex-nowrap items-center gap-1.5 sm:gap-2">
 
             {/* LIVE */}
 
             <span
               className="
                 flex
+                shrink-0
                 items-center
-                gap-2
+                gap-1.5
+                whitespace-nowrap
                 rounded-lg
                 bg-red-600
                 px-2.5
                 py-1.5
                 text-[9px]
-                sm:px-3
-                sm:text-xs
                 font-black
                 uppercase
-                tracking-[0.15em]
+                tracking-[0.12em]
                 text-white
+                sm:px-3
                 sm:text-xs
               "
             >
-
-              <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
-
-              Live
-
+              <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-white" />
+              LIVE
             </span>
 
 
@@ -1071,10 +1069,12 @@ function LiveVideo({ stream }) {
             <span
               className="
                 flex
+                shrink-0
                 items-center
-                gap-2
+                gap-1.5
+                whitespace-nowrap
                 rounded-lg
-                bg-black/60
+                bg-black/65
                 px-2.5
                 py-1.5
                 text-[9px]
@@ -1085,20 +1085,18 @@ function LiveVideo({ stream }) {
                 sm:text-xs
               "
             >
-
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className="h-4 w-4"
+                className="h-4 w-4 shrink-0"
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
                 />
-
                 <circle
                   cx="12"
                   cy="12"
@@ -1106,55 +1104,58 @@ function LiveVideo({ stream }) {
                 />
               </svg>
 
-
-              {viewerCount}
-
+              <span>{viewerCount}</span>
             </span>
 
 
-            {/* MARCADOR MINI — SOLO PANTALLAS GRANDES */}
+            {/* MARCADOR MINI — TABLET / ESCRITORIO */}
 
             <div
               className="
                 hidden
+                shrink-0
                 items-center
-                gap-2
+                gap-1.5
+                whitespace-nowrap
                 rounded-lg
                 border border-white/10
-                bg-black/60
-                px-3
+                bg-black/65
+                px-2.5
                 py-1.5
-                text-xs
+                text-[10px]
                 font-black
                 text-white
                 backdrop-blur-md
-                lg:flex
+                md:flex
+                lg:gap-2
+                lg:px-3
+                lg:text-xs
               "
             >
-              <span className="max-w-[110px] truncate text-slate-300">
-                {marcador.visitante}
+              <span className="max-w-[90px] truncate text-slate-200 lg:max-w-[130px]">
+                {marcador.visitante || "Visitante"}
               </span>
 
               <span className="text-white">
                 {marcador.carrerasVisitante}
               </span>
 
-              <span className="text-slate-600">-</span>
+              <span className="text-slate-500">-</span>
 
               <span className="text-yellow-300">
                 {marcador.carrerasLocal}
               </span>
 
-              <span className="max-w-[110px] truncate text-yellow-300">
-                {marcador.local}
+              <span className="max-w-[90px] truncate text-yellow-300 lg:max-w-[130px]">
+                {marcador.local || "Piratas"}
               </span>
             </div>
 
 
-            {/* CONEXIÓN */}
+            {/* CONEXIÓN — SOLO EN ESCRITORIO GRANDE */}
 
             <span
-              className={`hidden rounded-lg px-3 py-1.5 text-[10px] font-bold backdrop-blur-md sm:block sm:text-xs ${
+              className={`hidden shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold backdrop-blur-md xl:block ${
                 connected
                   ? "bg-emerald-500/15 text-emerald-300"
                   : "bg-black/60 text-slate-400"
@@ -1175,6 +1176,8 @@ function LiveVideo({ stream }) {
 
             <span
               className="
+                shrink-0
+                whitespace-nowrap
                 rounded-lg
                 bg-black/60
                 px-2.5
