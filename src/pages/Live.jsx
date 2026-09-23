@@ -271,11 +271,16 @@ function Live() {
 
         <section
           className="
-            relative overflow-hidden
-            rounded-[28px]
+            relative
+            mx-auto
+            w-full
+            max-w-[1100px]
+            overflow-hidden
+            rounded-[24px]
             border border-white/[0.08]
             bg-black
             shadow-[0_35px_100px_-40px_rgba(0,0,0,1)]
+            sm:rounded-[28px]
           "
         >
 
@@ -285,12 +290,14 @@ function Live() {
             <div
               className="
                 pointer-events-none
-                absolute left-5 top-5 z-20
+                absolute left-3 top-3 z-20
                 flex items-center gap-2
                 rounded-lg
                 bg-red-600
-                px-3 py-2
+                px-2.5 py-1.5
                 shadow-lg
+                sm:left-5 sm:top-5
+                sm:px-3 sm:py-2
               "
             >
               <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
