@@ -2,7 +2,8 @@ import { useEffect, useState } from "react"
 
 import LiveVideo from "../components/LiveVideo"
 
-import { subscribeToCurrentGame } from "../services/gameService"
+import { doc, onSnapshot } from "firebase/firestore"
+import { db } from "../firebase.config"
 import { subscribeToCurrentStream } from "../services/streamService"
 
 
@@ -54,21 +55,45 @@ function CountLights({
 
 
 function Live() {
-  const [game, setGame] = useState(null)
   const [stream, setStream] = useState(null)
 
-  useEffect(() => {
-    const unsubscribeGame = subscribeToCurrentGame((gameData) => {
-      setGame(gameData)
-    })
+  const [marcador, setMarcador] = useState({
+    local: "Piratas",
+    visitante: "Visitante",
+    carrerasLocal: 0,
+    carrerasVisitante: 0,
+    bolas: 0,
+    strikes: 0,
+    outs: 0,
+    inning: 1,
+    parte: "alta",
+  })
 
+  useEffect(() => {
     const unsubscribeStream = subscribeToCurrentStream((streamData) => {
       setStream(streamData)
     })
 
+    const marcadorRef = doc(db, "transmisiones", "partido_actual")
+
+    const unsubscribeMarcador = onSnapshot(
+      marcadorRef,
+      (snapshot) => {
+        if (!snapshot.exists()) return
+
+        setMarcador((actual) => ({
+          ...actual,
+          ...snapshot.data(),
+        }))
+      },
+      (error) => {
+        console.error("Error leyendo marcador en Live:", error)
+      }
+    )
+
     return () => {
-      unsubscribeGame()
       unsubscribeStream()
+      unsubscribeMarcador()
     }
   }, [])
 
@@ -76,6 +101,26 @@ function Live() {
   const isLive = stream?.isLive || false
   const cameraEnabled = stream?.cameraEnabled || false
   const micEnabled = stream?.micEnabled || false
+
+  const equipoBateando =
+    marcador.parte === "alta"
+      ? marcador.visitante
+      : marcador.local
+
+  // Un solo origen de verdad para el marcador:
+  // transmisiones/partido_actual
+  const game = {
+    awayTeam: marcador.visitante,
+    homeTeam: marcador.local,
+    awayScore: marcador.carrerasVisitante,
+    homeScore: marcador.carrerasLocal,
+    balls: marcador.bolas,
+    strikes: marcador.strikes,
+    outs: marcador.outs,
+    inning: marcador.inning,
+    inningHalf: marcador.parte === "alta" ? "top" : "bottom",
+    batter: equipoBateando,
+  }
 
 
   return (
@@ -263,6 +308,73 @@ function Live() {
 
         </header>
 
+
+
+        {/* ===================================================
+            MARCADOR COMPACTO — FUERA DEL VIDEO
+        =================================================== */}
+
+        <section
+          className="
+            mb-3
+            overflow-hidden
+            rounded-2xl
+            border border-white/[0.08]
+            bg-white/[0.04]
+            shadow-xl
+            backdrop-blur-xl
+          "
+        >
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-3 sm:px-5">
+            <div className="min-w-0">
+              <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">
+                Visitante
+              </p>
+              <p className="truncate text-sm font-black text-white sm:text-base">
+                {marcador.visitante}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 sm:gap-4">
+              <span className="text-2xl font-black text-white sm:text-3xl">
+                {marcador.carrerasVisitante}
+              </span>
+
+              <span className="text-xs font-black text-slate-600">
+                -
+              </span>
+
+              <span className="text-2xl font-black text-yellow-300 sm:text-3xl">
+                {marcador.carrerasLocal}
+              </span>
+            </div>
+
+            <div className="min-w-0 text-right">
+              <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">
+                Local
+              </p>
+              <p className="truncate text-sm font-black text-yellow-300 sm:text-base">
+                {marcador.local}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.07] px-4 py-2 text-[10px] font-black sm:px-5 sm:text-xs">
+            <span className="text-yellow-300">
+              {marcador.parte === "alta" ? "▲" : "▼"} {marcador.inning}ª
+            </span>
+
+            <span className="min-w-0 truncate text-slate-400">
+              Batea: <span className="text-white">{equipoBateando}</span>
+            </span>
+
+            <div className="flex shrink-0 items-center gap-3">
+              <span className="text-emerald-300">B {marcador.bolas}</span>
+              <span className="text-yellow-300">S {marcador.strikes}</span>
+              <span className="text-red-300">O {marcador.outs}</span>
+            </div>
+          </div>
+        </section>
 
 
         {/* ===================================================
