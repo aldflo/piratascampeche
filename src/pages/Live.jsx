@@ -318,6 +318,7 @@ function Live() {
           className="
             mb-3
             overflow-hidden
+            lg:hidden
             rounded-2xl
             border border-white/[0.08]
             bg-white/[0.04]
@@ -617,7 +618,7 @@ function Live() {
 
                       <CountLights
                         value={game.balls || 0}
-                        max={3}
+                        max={4}
                         activeClass="bg-emerald-400"
                       />
 
@@ -632,7 +633,7 @@ function Live() {
 
                       <CountLights
                         value={game.strikes || 0}
-                        max={2}
+                        max={3}
                         activeClass="bg-amber-400"
                       />
 
@@ -647,7 +648,7 @@ function Live() {
 
                       <CountLights
                         value={game.outs || 0}
-                        max={2}
+                        max={3}
                         activeClass="bg-red-500"
                       />
 

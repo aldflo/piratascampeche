@@ -1046,9 +1046,11 @@ function LiveVideo({ stream }) {
                 gap-2
                 rounded-lg
                 bg-red-600
-                px-3
+                px-2.5
                 py-1.5
-                text-[10px]
+                text-[9px]
+                sm:px-3
+                sm:text-xs
                 font-black
                 uppercase
                 tracking-[0.15em]
@@ -1073,12 +1075,13 @@ function LiveVideo({ stream }) {
                 gap-2
                 rounded-lg
                 bg-black/60
-                px-3
+                px-2.5
                 py-1.5
-                text-[10px]
+                text-[9px]
                 font-bold
                 text-white
                 backdrop-blur-md
+                sm:px-3
                 sm:text-xs
               "
             >
@@ -1109,6 +1112,45 @@ function LiveVideo({ stream }) {
             </span>
 
 
+            {/* MARCADOR MINI — SOLO PANTALLAS GRANDES */}
+
+            <div
+              className="
+                hidden
+                items-center
+                gap-2
+                rounded-lg
+                border border-white/10
+                bg-black/60
+                px-3
+                py-1.5
+                text-xs
+                font-black
+                text-white
+                backdrop-blur-md
+                lg:flex
+              "
+            >
+              <span className="max-w-[110px] truncate text-slate-300">
+                {marcador.visitante}
+              </span>
+
+              <span className="text-white">
+                {marcador.carrerasVisitante}
+              </span>
+
+              <span className="text-slate-600">-</span>
+
+              <span className="text-yellow-300">
+                {marcador.carrerasLocal}
+              </span>
+
+              <span className="max-w-[110px] truncate text-yellow-300">
+                {marcador.local}
+              </span>
+            </div>
+
+
             {/* CONEXIÓN */}
 
             <span
@@ -1135,11 +1177,13 @@ function LiveVideo({ stream }) {
               className="
                 rounded-lg
                 bg-black/60
-                px-3
+                px-2.5
                 py-1.5
-                text-[10px]
+                text-[9px]
                 font-bold
                 text-cyan-300
+                sm:px-3
+                sm:text-xs
                 backdrop-blur-md
                 sm:text-xs
               "
