@@ -5,6 +5,15 @@ import {
 } from "react"
 
 import {
+  doc,
+  onSnapshot,
+} from "firebase/firestore"
+
+import {
+  db,
+} from "../firebase.config"
+
+import {
   RoomEvent,
 } from "livekit-client"
 
@@ -64,9 +73,72 @@ function LiveVideo({ stream }) {
     setError,
   ] = useState("")
 
+  const [
+    marcador,
+    setMarcador,
+  ] = useState({
+    local: "Piratas",
+    visitante: "Visitante",
+    carrerasLocal: 0,
+    carrerasVisitante: 0,
+    bolas: 0,
+    strikes: 0,
+    outs: 0,
+    inning: 1,
+    parte: "alta",
+  })
+
 
   const isLive =
     stream?.isLive ?? false
+
+  const equipoBateando =
+    marcador.parte === "alta"
+      ? marcador.visitante
+      : marcador.local
+
+
+  /*
+  ==========================================
+  MARCADOR FIRESTORE
+  ==========================================
+  */
+
+  useEffect(() => {
+    const referencia =
+      doc(
+        db,
+        "transmisiones",
+        "partido_actual"
+      )
+
+    const unsubscribe =
+      onSnapshot(
+        referencia,
+        (snapshot) => {
+          if (!snapshot.exists()) {
+            return
+          }
+
+          setMarcador(
+            (actual) => ({
+              ...actual,
+              ...snapshot.data(),
+            })
+          )
+        },
+        (err) => {
+          console.error(
+            "Error leyendo marcador:",
+            err
+          )
+        }
+      )
+
+    return () => {
+      unsubscribe()
+    }
+  }, [])
 
 
   /*
@@ -1081,6 +1153,84 @@ function LiveVideo({ stream }) {
 
         </div>
 
+
+
+        {/* ===================================
+            MARCADOR EN VIVO
+        =================================== */}
+
+        {hasVideo && (
+          <div className="
+            absolute bottom-16 left-3 right-3 z-20
+            sm:left-4 sm:right-auto sm:w-[420px]
+          ">
+            <div className="
+              overflow-hidden rounded-2xl border border-white/10
+              bg-black/75 shadow-2xl backdrop-blur-md
+            ">
+              <div className="
+                flex items-center justify-between
+                border-b border-white/10 px-3 py-2
+              ">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white">
+                    Marcador
+                  </span>
+                </div>
+
+                <span className="text-xs font-black text-yellow-300">
+                  {marcador.parte === "alta" ? "▲" : "▼"} {marcador.inning}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-3 py-3">
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">
+                    Visitante
+                  </p>
+                  <p className="truncate text-sm font-black text-white">
+                    {marcador.visitante}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl font-black text-white">
+                    {marcador.carrerasVisitante}
+                  </span>
+                  <span className="text-xs font-black text-slate-600">-</span>
+                  <span className="text-3xl font-black text-yellow-300">
+                    {marcador.carrerasLocal}
+                  </span>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">
+                    Local
+                  </p>
+                  <p className="truncate text-sm font-black text-yellow-300">
+                    {marcador.local}
+                  </p>
+                </div>
+              </div>
+
+              <div className="
+                flex items-center justify-between
+                border-t border-white/10 px-3 py-2
+              ">
+                <span className="text-[10px] font-bold text-slate-400">
+                  Batea: <span className="text-white">{equipoBateando}</span>
+                </span>
+
+                <div className="flex items-center gap-3 text-[10px] font-black">
+                  <span className="text-emerald-300">B {marcador.bolas}</span>
+                  <span className="text-yellow-300">S {marcador.strikes}</span>
+                  <span className="text-red-300">O {marcador.outs}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ===================================
             CARGANDO
